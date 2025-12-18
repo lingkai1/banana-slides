@@ -220,8 +220,16 @@ class OpenAIImageProvider(ImageProvider):
         """
         Generate image using OpenAI SDK or PPT Agent if applicable
         """
-        # If project_id and page_id are provided, use PPT Agent logic
-        if project_id and page_id:
+        # Check if we should use PPT Agent logic
+        # Default to False unless explicitly enabled via env var
+        use_ppt_agent = os.getenv("use_ppt_agent", "false").lower() == "true"
+
+        # Also check uppercase just in case
+        if not use_ppt_agent:
+            use_ppt_agent = os.getenv("USE_PPT_AGENT", "false").lower() == "true"
+
+        # If project_id and page_id are provided AND use_ppt_agent is enabled, use PPT Agent logic
+        if use_ppt_agent and project_id and page_id:
             logger.info(f"Using PPT Agent for project {project_id}, page {page_id}")
             try:
                 # Define paths
@@ -243,13 +251,16 @@ class OpenAIImageProvider(ImageProvider):
                 def image_gen_callback(p):
                     return self._generate_standard_image(p, aspect_ratio="1:1", resolution=resolution)
 
+                # Use a chat model for the planner (default to gemini-3-pro-preview or from env)
+                planner_model = os.getenv("PPT_AGENT_MODEL", "gemini-3-pro-preview")
+
                 result = generate_single_page_ppt(
                     outline=prompt,
                     ppt_output_path=ppt_path,
                     img_output_path=img_path,
                     assets_output_dir=assets_dir,
                     client=self.client,
-                    model_name=self.model,
+                    model_name=planner_model,
                     image_generator=image_gen_callback
                 )
 

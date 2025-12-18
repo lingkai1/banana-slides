@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # ==========================================
 BACKGROUND_IMG_NAME = "tech_bg_v3.png"
 # Default to using mock images if we can't reach the internal API
-USE_MOCK_IMAGES = os.environ.get("PPT_AGENT_USE_MOCK", "True").lower() == "true"
+USE_MOCK_IMAGES = os.environ.get("PPT_AGENT_USE_MOCK", "False").lower() == "true"
 
 WIN32_AVAILABLE = True
 try:
