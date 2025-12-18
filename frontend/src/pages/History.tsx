@@ -257,10 +257,10 @@ export const History: React.FC = () => {
       <nav className="h-14 md:h-16 bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-3 md:px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-banana-500 to-banana-600 rounded-lg flex items-center justify-center text-xl md:text-2xl">
-              🍌
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-banana-500 to-banana-600 rounded-lg flex items-center justify-center">
+              <img src="/logo.png" alt="Logo" className="w-5 h-5 md:w-6 md:h-6 object-contain" />
             </div>
-            <span className="text-lg md:text-xl font-bold text-gray-900">蕉幻</span>
+            <span className="text-lg md:text-xl font-bold text-gray-900">盘古幻灯片</span>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             <Button

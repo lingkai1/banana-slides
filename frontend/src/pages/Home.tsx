@@ -459,12 +459,12 @@ export const Home: React.FC = () => {
             <div className="flex items-center">
               <img
                 src="/logo.png"
-                alt="蕉幻 Banana Slides Logo"
+                alt="盘古幻灯片 Pangu PPT Logo"
                 className="h-10 md:h-12 w-auto rounded-lg object-contain"
               />
             </div>
             <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
-              蕉幻
+              盘古幻灯片
             </span>
           </div>
           <div className="flex items-center gap-2 md:gap-3">
@@ -517,7 +517,7 @@ export const Home: React.FC = () => {
         <div className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-banana-200/50 shadow-sm mb-4">
             <span className="text-2xl animate-pulse"><Sparkles size={20} color="orange" /></span>
-            <span className="text-sm font-medium text-gray-700">基于 nano banana pro🍌 的原生 AI PPT 生成器</span>
+            <span className="text-sm font-medium text-gray-700">基于 Pangu Pro 的原生 AI PPT 生成器</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
@@ -525,7 +525,7 @@ export const Home: React.FC = () => {
               backgroundSize: '200% auto',
               animation: 'gradient 3s ease infinite',
             }}>
-              蕉幻 · Banana Slides
+              盘古幻灯片 · Pangu PPT
             </span>
           </h1>
           
