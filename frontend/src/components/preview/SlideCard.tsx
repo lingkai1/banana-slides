@@ -77,7 +77,7 @@ export const SlideCard: React.FC<SlideCardProps> = ({
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
             <div className="text-center">
-              <div className="text-3xl mb-1">🍌</div>
+              <img src="/logo.png" alt="Logo" className="w-8 h-8 mb-1 opacity-50 mx-auto" />
               <div className="text-xs">未生成</div>
             </div>
           </div>
