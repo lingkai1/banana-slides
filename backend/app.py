@@ -115,7 +115,7 @@ def create_app():
     # Health check endpoint
     @app.route('/health')
     def health_check():
-        return {'status': 'ok', 'message': 'Banana Slides API is running'}
+        return {'status': 'ok', 'message': 'Pangu PPT API is running'}
     
     # Output language endpoint
     @app.route('/api/output-language', methods=['GET'])
@@ -134,7 +134,7 @@ def create_app():
     @app.route('/')
     def index():
         return {
-            'name': 'Banana Slides API',
+            'name': 'Pangu PPT API',
             'version': '1.0.0',
             'description': 'AI-powered PPT generation service',
             'endpoints': {

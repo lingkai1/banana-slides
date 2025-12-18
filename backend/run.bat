@@ -2,7 +2,7 @@
 REM Banana Slides Backend Startup Script for Windows
 
 echo ╔══════════════════════════════════════╗
-echo ║   🍌 Banana Slides API Server 🍌   ║
+echo ║   📊 Pangu PPT API Server 📊   ║
 echo ╚══════════════════════════════════════╝
 echo.
 

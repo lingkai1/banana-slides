@@ -19,7 +19,7 @@
 
 </p> 
 
-<b>A native AI-powered PPT generation application based on nano banana pro🍌, supporting idea/outline/page description to generate complete PPT presentations,<br></b>
+<b>A native AI-powered PPT generation application based on Pangu Pro, supporting idea/outline/page description to generate complete PPT presentations,<br></b>
 <b> automatic extraction of attached charts, upload any materials, and verbal modifications, moving towards true "Vibe PPT" </b>
 
 <b>🎯 Lower the barrier to PPT creation, enabling everyone to quickly create beautiful and professional presentations</b>
@@ -58,7 +58,7 @@ I (we) aspire to quickly create presentations that are both professional and des
 
 These defects make traditional AI PPT generators unable to simultaneously meet our two major PPT production requirements: "fast" and "beautiful". Even if they claim to be Vibe PPT, in my eyes, they are still far from "Vibe" enough.
 
-However, the emergence of nano banana🍌 model changed everything. I tried using 🍌pro for PPT page generation and found that the generated results are excellent in quality, aesthetics, and consistency, and can almost accurately render all text required by the prompt + follow the style of the reference image. So why not build a native "Vibe PPT" application based on 🍌pro?
+However, the emergence of Pangu Pro model changed everything. I tried using Pangu Pro for PPT page generation and found that the generated results are excellent in quality, aesthetics, and consistency, and can almost accurately render all text required by the prompt + follow the style of the reference image. So why not build a native "Vibe PPT" application based on Pangu Pro?
 
 ## 👨‍💻 Use Cases
 
@@ -107,7 +107,7 @@ Supports three starting methods: **idea**, **outline**, and **page description**
 ### 3. "Vibe" Style Natural Language Modification
 No longer limited by complex menu buttons, directly issue modification instructions through **natural language**.
 - **Local redraw**: Make verbal modifications to unsatisfactory areas (e.g., "change this chart to a pie chart").
-- **Full page optimization**: Generate high-definition, style-consistent pages based on nano banana pro🍌.
+- **Full page optimization**: Generate high-definition, style-consistent pages based on Pangu Pro.
 
 <img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/929ba24a-996c-4f6d-9ec6-818be6b08ea3" />
 

@@ -1,6 +1,6 @@
-# Banana Slides Backend
+# Pangu PPT Backend
 
-蕉幻（Banana Slides）后端服务 - AI驱动的PPT生成系统
+盘古幻灯片（Pangu PPT）后端服务 - AI驱动的PPT生成系统
 
 ## 技术栈
 
