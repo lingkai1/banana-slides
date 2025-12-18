@@ -62,8 +62,29 @@ def export_pptx(project_id):
 
         output_path = os.path.join(exports_dir, filename)
 
+        # Check if we can merge existing PPTX files (PPT Agent mode)
+        # Strategy: If ALL pages have a corresponding .pptx file in uploads/{project_id}/{page.id}.pptx, use merge.
+        can_merge_pptx = False
+        pptx_paths = []
+        all_pptx_exist = True
+
+        for page in pages:
+            # Construct path: uploads/{project_id}/{page.id}.pptx
+            pptx_path = os.path.join(current_app.config['UPLOAD_FOLDER'], project_id, f"{page.id}.pptx")
+            if os.path.exists(pptx_path):
+                pptx_paths.append(pptx_path)
+            else:
+                all_pptx_exist = False
+                break
+
+        if all_pptx_exist and pptx_paths:
+            can_merge_pptx = True
+
         # Generate PPTX file on disk
-        ExportService.create_pptx_from_images(image_paths, output_file=output_path)
+        if can_merge_pptx:
+            ExportService.merge_pptx_files(pptx_paths, output_file=output_path)
+        else:
+            ExportService.create_pptx_from_images(image_paths, output_file=output_path)
 
         # Build download URLs
         download_path = f"/files/{project_id}/exports/{filename}"
