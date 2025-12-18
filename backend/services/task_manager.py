@@ -330,40 +330,33 @@ def generate_images_task(task_id: str, project_id: str, ai_service, file_service
                         logger.error(f"Failed to generate image for page {page_id}: {error_detail}")
                         return (page_id, None, str(e))
             
-            # Use ThreadPoolExecutor for parallel generation
-            # 关键：提前提取 page.id，不要传递 ORM 对象到子线程
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [
-                    executor.submit(generate_single_image, page.id, page_data, i)
-                    for i, (page, page_data) in enumerate(zip(pages, pages_data), 1)
-                ]
+            # Changed to serial execution to avoid model performance issues
+            # Use a simple loop instead of ThreadPoolExecutor
+            logger.info("Starting serial image generation...")
+            for i, (page, page_data) in enumerate(zip(pages, pages_data), 1):
+                page_id, image_path, error = generate_single_image(page.id, page_data, i)
                 
-                # Process results as they complete
-                for future in as_completed(futures):
-                    page_id, image_path, error = future.result()
+                db.session.expire_all()
+
+                # Update page in database
+                page = Page.query.get(page_id)
+                if page:
+                    if error:
+                        page.status = 'FAILED'
+                        failed += 1
+                    else:
+                        page.generated_image_path = image_path
+                        page.status = 'COMPLETED'
+                        completed += 1
                     
-                    
-                    db.session.expire_all()
-                    
-                    # Update page in database
-                    page = Page.query.get(page_id)
-                    if page:
-                        if error:
-                            page.status = 'FAILED'
-                            failed += 1
-                        else:
-                            page.generated_image_path = image_path
-                            page.status = 'COMPLETED'
-                            completed += 1
-                        
-                        db.session.commit()
-                    
-                    # Update task progress
-                    task = Task.query.get(task_id)
-                    if task:
-                        task.update_progress(completed=completed, failed=failed)
-                        db.session.commit()
-                        logger.info(f"Image Progress: {completed}/{len(pages)} pages completed")
+                    db.session.commit()
+
+                # Update task progress
+                task = Task.query.get(task_id)
+                if task:
+                    task.update_progress(completed=completed, failed=failed)
+                    db.session.commit()
+                    logger.info(f"Image Progress: {completed}/{len(pages)} pages completed")
             
             # Mark task as completed
             task = Task.query.get(task_id)
