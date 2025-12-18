@@ -234,8 +234,13 @@ class OpenAIImageProvider(ImageProvider):
             try:
                 # Define paths
                 # Ensure uploads/project_id exists
-                # We assume we can write to 'uploads' relative to CWD
-                base_dir = os.path.abspath("uploads")
+                # Locate project root relative to this file
+                # this file is at backend/services/ai_providers/image/openai_provider.py
+                current_file = os.path.abspath(__file__)
+                backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_file))))
+                project_root = os.path.dirname(backend_dir)
+                base_dir = os.path.join(project_root, "uploads")
+
                 project_dir = os.path.join(base_dir, project_id)
                 assets_dir = os.path.join(project_dir, "assets")
 
