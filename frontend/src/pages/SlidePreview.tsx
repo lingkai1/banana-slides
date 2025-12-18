@@ -668,8 +668,7 @@ export const SlidePreview: React.FC = () => {
             <span className="hidden sm:inline">返回</span>
           </Button>
           <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
-            <span className="text-xl md:text-2xl">🍌</span>
-            <span className="text-base md:text-xl font-bold truncate">蕉幻</span>
+            <span className="text-base md:text-xl font-bold truncate">盘古幻灯片</span>
           </div>
           <span className="text-gray-400 hidden md:inline">|</span>
           <span className="text-sm md:text-lg font-semibold truncate hidden sm:inline">预览</span>
@@ -883,7 +882,7 @@ export const SlidePreview: React.FC = () => {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-100">
                         <div className="text-center">
-                          <div className="text-6xl mb-4">🍌</div>
+                          <div className="text-6xl mb-4">📊</div>
                           <p className="text-gray-500 mb-4">
                             {selectedPage?.id && pageGeneratingTasks[selectedPage.id]
                               ? '正在生成中...'
