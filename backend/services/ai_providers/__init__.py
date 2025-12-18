@@ -26,13 +26,13 @@ import logging
 from typing import Tuple, Type
 
 from .text import TextProvider, GenAITextProvider, OpenAITextProvider
-from .image import ImageProvider, GenAIImageProvider, OpenAIImageProvider, PPTAgentImageProvider
+from .image import ImageProvider, GenAIImageProvider, PPTAgentImageProvider
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     'TextProvider', 'GenAITextProvider', 'OpenAITextProvider',
-    'ImageProvider', 'GenAIImageProvider', 'OpenAIImageProvider', 'PPTAgentImageProvider',
+    'ImageProvider', 'GenAIImageProvider', 'PPTAgentImageProvider',
     'get_text_provider', 'get_image_provider', 'get_provider_format'
 ]
 
