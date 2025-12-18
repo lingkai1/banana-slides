@@ -25,13 +25,13 @@ import logging
 from typing import Tuple, Type
 
 from .text import TextProvider, GenAITextProvider, OpenAITextProvider
-from .image import ImageProvider, GenAIImageProvider, OpenAIImageProvider
+from .image import ImageProvider, GenAIImageProvider, OpenAIImageProvider, PPTAgentImageProvider
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     'TextProvider', 'GenAITextProvider', 'OpenAITextProvider',
-    'ImageProvider', 'GenAIImageProvider', 'OpenAIImageProvider',
+    'ImageProvider', 'GenAIImageProvider', 'OpenAIImageProvider', 'PPTAgentImageProvider',
     'get_text_provider', 'get_image_provider', 'get_provider_format'
 ]
 
@@ -159,7 +159,7 @@ def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvid
         model: Model name to use
         
     Returns:
-        ImageProvider instance (GenAIImageProvider or OpenAIImageProvider)
+        ImageProvider instance (GenAIImageProvider or PPTAgentImageProvider)
         
     Note:
         OpenAI format does NOT support 4K resolution, only 1K is available.
@@ -168,9 +168,9 @@ def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvid
     provider_format, api_key, api_base = _get_provider_config()
     
     if provider_format == 'openai':
-        logger.info(f"Using OpenAI format for image generation, model: {model}")
-        logger.warning("OpenAI format only supports 1K resolution, 4K is not available")
-        return OpenAIImageProvider(api_key=api_key, api_base=api_base, model=model)
+        logger.info(f"Using OpenAI format for image generation (PPT Agent), model: {model}")
+        # When using OpenAI format, we now use the PPT Agent Provider as requested
+        return PPTAgentImageProvider(api_key=api_key, api_base=api_base, model=model)
     else:
         logger.info(f"Using Gemini format for image generation, model: {model}")
         return GenAIImageProvider(api_key=api_key, api_base=api_base, model=model)
