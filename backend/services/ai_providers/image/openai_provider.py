@@ -4,12 +4,14 @@ OpenAI SDK implementation for image generation
 import logging
 import base64
 import re
+import os
 import requests
 from io import BytesIO
 from typing import Optional, List
 from openai import OpenAI
 from PIL import Image
 from .base import ImageProvider
+from .ppt_agent import generate_single_page_ppt
 
 logger = logging.getLogger(__name__)
 
@@ -49,27 +51,14 @@ class OpenAIImageProvider(ImageProvider):
         image.save(buffered, format="JPEG", quality=95)
         return base64.b64encode(buffered.getvalue()).decode('utf-8')
     
-    def generate_image(
+    def _generate_standard_image(
         self,
         prompt: str,
         ref_images: Optional[List[Image.Image]] = None,
         aspect_ratio: str = "16:9",
         resolution: str = "2K"
     ) -> Optional[Image.Image]:
-        """
-        Generate image using OpenAI SDK
-        
-        Note: OpenAI format does NOT support 4K images, defaults to 1K
-        
-        Args:
-            prompt: The image generation prompt
-            ref_images: Optional list of reference images
-            aspect_ratio: Image aspect ratio
-            resolution: Image resolution (only 1K supported, parameter ignored)
-            
-        Returns:
-            Generated PIL Image object, or None if failed
-        """
+        """Original generation logic using OpenAI API"""
         try:
             # Build message content
             content = []
@@ -218,3 +207,79 @@ class OpenAIImageProvider(ImageProvider):
             error_detail = f"Error generating image with OpenAI (model={self.model}): {type(e).__name__}: {str(e)}"
             logger.error(error_detail, exc_info=True)
             raise Exception(error_detail) from e
+
+    def generate_image(
+        self,
+        prompt: str,
+        ref_images: Optional[List[Image.Image]] = None,
+        aspect_ratio: str = "16:9",
+        resolution: str = "2K",
+        project_id: str = None,
+        page_id: str = None
+    ) -> Optional[Image.Image]:
+        """
+        Generate image using OpenAI SDK or PPT Agent if applicable
+        """
+        # Check if we should use PPT Agent logic
+        # Default to False unless explicitly enabled via env var
+        use_ppt_agent = os.getenv("use_ppt_agent", "false").lower() == "true"
+
+        # Also check uppercase just in case
+        if not use_ppt_agent:
+            use_ppt_agent = os.getenv("USE_PPT_AGENT", "false").lower() == "true"
+
+        # If project_id and page_id are provided AND use_ppt_agent is enabled, use PPT Agent logic
+        if use_ppt_agent and project_id and page_id:
+            logger.info(f"Using PPT Agent for project {project_id}, page {page_id}")
+            try:
+                # Define paths
+                # Ensure uploads/project_id exists
+                # We assume we can write to 'uploads' relative to CWD
+                base_dir = os.path.abspath("uploads")
+                project_dir = os.path.join(base_dir, project_id)
+                assets_dir = os.path.join(project_dir, "assets")
+
+                if not os.path.exists(project_dir):
+                    os.makedirs(project_dir)
+                if not os.path.exists(assets_dir):
+                    os.makedirs(assets_dir)
+
+                ppt_path = os.path.join(project_dir, f"{page_id}.pptx")
+                img_path = os.path.join(project_dir, f"{page_id}_preview.jpg")
+
+                # Callback for image generation inside PPT Agent (to use this provider's logic)
+                def image_gen_callback(p):
+                    return self._generate_standard_image(p, aspect_ratio="1:1", resolution=resolution)
+
+                # Use a chat model for the planner (default to gemini-3-pro-preview or from env)
+                planner_model = os.getenv("PPT_AGENT_MODEL", "gemini-3-pro-preview")
+
+                result = generate_single_page_ppt(
+                    outline=prompt,
+                    ppt_output_path=ppt_path,
+                    img_output_path=img_path,
+                    assets_output_dir=assets_dir,
+                    client=self.client,
+                    model_name=planner_model,
+                    image_generator=image_gen_callback
+                )
+
+                if result.get("status") == "success" and os.path.exists(result.get("img_path")):
+                    logger.info(f"PPT Agent generated image at {result.get('img_path')}")
+                    return Image.open(result.get("img_path"))
+                else:
+                    logger.error(f"PPT Agent failed: {result}")
+                    # Fallback to standard generation if PPT Agent fails?
+                    # Or just raise error?
+                    # If PPT Agent fails, we probably want to fail or fallback.
+                    # Let's fallback to standard generation so the user at least gets an image
+                    logger.warning("Falling back to standard image generation")
+                    return self._generate_standard_image(prompt, ref_images, aspect_ratio, resolution)
+
+            except Exception as e:
+                logger.error(f"Error in PPT Agent: {e}", exc_info=True)
+                # Fallback
+                return self._generate_standard_image(prompt, ref_images, aspect_ratio, resolution)
+
+        # Default to standard generation
+        return self._generate_standard_image(prompt, ref_images, aspect_ratio, resolution)
