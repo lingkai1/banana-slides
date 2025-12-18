@@ -350,7 +350,9 @@ class AIService:
     
     def generate_image(self, prompt: str, ref_image_path: Optional[str] = None, 
                       aspect_ratio: str = "16:9", resolution: str = "2K",
-                      additional_ref_images: Optional[List[Union[str, Image.Image]]] = None) -> Optional[Image.Image]:
+                      additional_ref_images: Optional[List[Union[str, Image.Image]]] = None,
+                      project_id: Optional[str] = None,
+                      page_id: Optional[str] = None) -> Optional[Image.Image]:
         """
         Generate image using configured image provider
         Based on gemini_genai.py gen_image()
@@ -361,6 +363,8 @@ class AIService:
             aspect_ratio: Image aspect ratio
             resolution: Image resolution (note: OpenAI format only supports 1K)
             additional_ref_images: 额外的参考图片列表，可以是本地路径、URL 或 PIL Image 对象
+            project_id: Optional project ID (for saving files)
+            page_id: Optional page ID (for saving files)
         
         Returns:
             PIL Image object or None if failed
@@ -420,7 +424,9 @@ class AIService:
                 prompt=prompt,
                 ref_images=ref_images if ref_images else None,
                 aspect_ratio=aspect_ratio,
-                resolution=resolution
+                resolution=resolution,
+                project_id=project_id,
+                page_id=page_id
             )
             
         except Exception as e:
@@ -431,7 +437,9 @@ class AIService:
     def edit_image(self, prompt: str, current_image_path: str,
                   aspect_ratio: str = "16:9", resolution: str = "2K",
                   original_description: str = None,
-                  additional_ref_images: Optional[List[Union[str, Image.Image]]] = None) -> Optional[Image.Image]:
+                  additional_ref_images: Optional[List[Union[str, Image.Image]]] = None,
+                  project_id: Optional[str] = None,
+                  page_id: Optional[str] = None) -> Optional[Image.Image]:
         """
         Edit existing image with natural language instruction
         Uses current image as reference
@@ -443,6 +451,8 @@ class AIService:
             resolution: Image resolution
             original_description: Original page description to include in prompt
             additional_ref_images: 额外的参考图片列表，可以是本地路径、URL 或 PIL Image 对象
+            project_id: Optional project ID (for saving files)
+            page_id: Optional page ID (for saving files)
         
         Returns:
             PIL Image object or None if failed
@@ -452,7 +462,15 @@ class AIService:
             edit_instruction=prompt,
             original_description=original_description
         )
-        return self.generate_image(edit_instruction, current_image_path, aspect_ratio, resolution, additional_ref_images)
+        return self.generate_image(
+            edit_instruction,
+            current_image_path,
+            aspect_ratio,
+            resolution,
+            additional_ref_images,
+            project_id=project_id,
+            page_id=page_id
+        )
     
     def parse_description_to_outline(self, project_context: ProjectContext, language='zh') -> List[Dict]:
         """

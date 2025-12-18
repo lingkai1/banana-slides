@@ -309,7 +309,9 @@ def generate_images_task(task_id: str, project_id: str, ai_service, file_service
                         logger.info(f"🎨 Calling AI service to generate image for page {page_index}/{len(pages)}...")
                         image = ai_service.generate_image(
                             prompt, ref_image_path, aspect_ratio, resolution,
-                            additional_ref_images=page_additional_ref_images if page_additional_ref_images else None
+                            additional_ref_images=page_additional_ref_images if page_additional_ref_images else None,
+                            project_id=project_id,
+                            page_id=page_id
                         )
                         logger.info(f"✅ Image generated successfully for page {page_index}")
                         
@@ -472,7 +474,9 @@ def generate_single_page_image_task(task_id: str, project_id: str, page_id: str,
             logger.info(f"🎨 Generating image for page {page_id}...")
             image = ai_service.generate_image(
                 prompt, ref_image_path, aspect_ratio, resolution,
-                additional_ref_images=additional_ref_images if additional_ref_images else None
+                additional_ref_images=additional_ref_images if additional_ref_images else None,
+                project_id=project_id,
+                page_id=page_id
             )
             
             if not image:
@@ -587,7 +591,9 @@ def edit_page_image_task(task_id: str, project_id: str, page_id: str,
                     aspect_ratio,
                     resolution,
                     original_description=original_description,
-                    additional_ref_images=additional_ref_images if additional_ref_images else None
+                    additional_ref_images=additional_ref_images if additional_ref_images else None,
+                    project_id=project_id,
+                    page_id=page_id
                 )
             finally:
                 # Clean up temp directory if created
