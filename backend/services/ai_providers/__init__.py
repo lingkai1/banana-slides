@@ -11,6 +11,7 @@ Configuration Priority (highest to lowest):
 
 Environment Variables:
     AI_PROVIDER_FORMAT: "gemini" (default) or "openai"
+    PPT_GENERATOR: "vlm" (for GenAI/Gemini) or "ppt_agent" (for PPT Agent/OpenAI)
     
     For Gemini format (Google GenAI SDK):
         GOOGLE_API_KEY: API key
@@ -35,6 +36,35 @@ __all__ = [
     'get_text_provider', 'get_image_provider', 'get_provider_format'
 ]
 
+def _get_config_value(key: str, default: str = None) -> str:
+    """
+    Helper to get config value with priority: app.config > env var > default
+    """
+    try:
+        from flask import current_app
+        if current_app and hasattr(current_app, 'config'):
+            # Check if key exists in config (even if value is empty string)
+            if key in current_app.config:
+                config_value = current_app.config.get(key)
+                if config_value is not None:
+                    logger.info(f"[CONFIG] Using {key} from app.config: {config_value}")
+                    return str(config_value)
+            else:
+                logger.debug(f"[CONFIG] Key {key} not found in app.config, checking env var")
+    except RuntimeError as e:
+        # Not in Flask application context, fallback to env var
+        logger.debug(f"[CONFIG] Not in Flask context for {key}: {e}")
+
+    # Fallback to environment variable or default
+    env_value = os.getenv(key)
+    if env_value is not None:
+        logger.info(f"[CONFIG] Using {key} from environment: {env_value}")
+        return env_value
+    if default is not None:
+        logger.info(f"[CONFIG] Using {key} default: {default}")
+        return default
+    logger.warning(f"[CONFIG] No value found for {key}, returning None")
+    return None
 
 def get_provider_format() -> str:
     """
@@ -48,19 +78,7 @@ def get_provider_format() -> str:
     Returns:
         "gemini" or "openai"
     """
-    # Try to get from Flask app config first (database settings)
-    try:
-        from flask import current_app
-        if current_app and hasattr(current_app, 'config'):
-            config_value = current_app.config.get('AI_PROVIDER_FORMAT')
-            if config_value:
-                return str(config_value).lower()
-    except RuntimeError:
-        # Not in Flask application context
-        pass
-    
-    # Fallback to environment variable
-    return os.getenv('AI_PROVIDER_FORMAT', 'gemini').lower()
+    return _get_config_value('AI_PROVIDER_FORMAT', 'gemini').lower()
 
 
 def _get_provider_config() -> Tuple[str, str, str]:
@@ -80,38 +98,9 @@ def _get_provider_config() -> Tuple[str, str, str]:
     """
     provider_format = get_provider_format()
     
-    # Helper to get config value with priority: app.config > env var > default
-    def get_config(key: str, default: str = None) -> str:
-        try:
-            from flask import current_app
-            if current_app and hasattr(current_app, 'config'):
-                # Check if key exists in config (even if value is empty string)
-                # This allows database settings to override env vars even with empty values
-                if key in current_app.config:
-                    config_value = current_app.config.get(key)
-                    # Return the value even if it's empty string (user explicitly set it)
-                    if config_value is not None:
-                        logger.info(f"[CONFIG] Using {key} from app.config: {config_value}")
-                        return str(config_value)
-                else:
-                    logger.debug(f"[CONFIG] Key {key} not found in app.config, checking env var")
-        except RuntimeError as e:
-            # Not in Flask application context, fallback to env var
-            logger.debug(f"[CONFIG] Not in Flask context for {key}: {e}")
-        # Fallback to environment variable or default
-        env_value = os.getenv(key)
-        if env_value is not None:
-            logger.info(f"[CONFIG] Using {key} from environment: {env_value}")
-            return env_value
-        if default is not None:
-            logger.info(f"[CONFIG] Using {key} default: {default}")
-            return default
-        logger.warning(f"[CONFIG] No value found for {key}, returning None")
-        return None
-    
     if provider_format == 'openai':
-        api_key = get_config('OPENAI_API_KEY') or get_config('GOOGLE_API_KEY')
-        api_base = get_config('OPENAI_API_BASE', 'https://aihubmix.com/v1')
+        api_key = _get_config_value('OPENAI_API_KEY') or _get_config_value('GOOGLE_API_KEY')
+        api_base = _get_config_value('OPENAI_API_BASE', 'https://aihubmix.com/v1')
         
         if not api_key:
             raise ValueError(
@@ -120,8 +109,8 @@ def _get_provider_config() -> Tuple[str, str, str]:
     else:
         # Gemini format (default)
         provider_format = 'gemini'
-        api_key = get_config('GOOGLE_API_KEY')
-        api_base = get_config('GOOGLE_API_BASE')
+        api_key = _get_config_value('GOOGLE_API_KEY')
+        api_base = _get_config_value('GOOGLE_API_BASE')
         
         logger.info(f"Provider config - format: {provider_format}, api_base: {api_base}, api_key: {'***' if api_key else 'None'}")
         
@@ -153,7 +142,8 @@ def get_text_provider(model: str = "gemini-2.5-flash") -> TextProvider:
 
 def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvider:
     """
-    Factory function to get image generation provider based on configuration
+    Factory function to get image generation provider based on configuration.
+    Controlled by PPT_GENERATOR config.
     
     Args:
         model: Model name to use
@@ -161,16 +151,39 @@ def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvid
     Returns:
         ImageProvider instance (GenAIImageProvider or PPTAgentImageProvider)
         
-    Note:
-        OpenAI format does NOT support 4K resolution, only 1K is available.
-        If you need higher resolution images, use Gemini format.
+    Configuration:
+        PPT_GENERATOR="vlm": Uses GenAIImageProvider (Google GenAI)
+        PPT_GENERATOR="ppt_agent" (or other/default): Uses PPTAgentImageProvider (OpenAI-based PPT generation)
     """
-    provider_format, api_key, api_base = _get_provider_config()
+    ppt_generator = _get_config_value('PPT_GENERATOR')
     
-    if provider_format == 'openai':
-        logger.info(f"Using OpenAI format for image generation (PPT Agent), model: {model}")
-        # When using OpenAI format, we now use the PPT Agent Provider as requested
-        return PPTAgentImageProvider(api_key=api_key, api_base=api_base, model=model)
+    # Determine if we should use VLM (Gemini/GenAI)
+    use_vlm = False
+    if ppt_generator:
+        if ppt_generator.lower() == 'vlm':
+            use_vlm = True
     else:
-        logger.info(f"Using Gemini format for image generation, model: {model}")
+        # Fallback to AI_PROVIDER_FORMAT if PPT_GENERATOR not set
+        if get_provider_format() == 'gemini':
+            use_vlm = True
+
+    if use_vlm:
+        logger.info(f"Using GenAIImageProvider (vlm) for image generation, model: {model}")
+        api_key = _get_config_value('GOOGLE_API_KEY')
+        api_base = _get_config_value('GOOGLE_API_BASE')
+
+        if not api_key:
+             # Try to provide a helpful error message
+             raise ValueError("GOOGLE_API_KEY is required when PPT_GENERATOR=vlm (or default Gemini format)")
+
         return GenAIImageProvider(api_key=api_key, api_base=api_base, model=model)
+    else:
+        logger.info(f"Using PPTAgentImageProvider for image generation, model: {model}")
+        # PPT Agent uses OpenAI client
+        api_key = _get_config_value('OPENAI_API_KEY') or _get_config_value('GOOGLE_API_KEY')
+        api_base = _get_config_value('OPENAI_API_BASE', 'https://aihubmix.com/v1')
+
+        if not api_key:
+             raise ValueError("OPENAI_API_KEY (or GOOGLE_API_KEY) is required for PPT Agent provider")
+
+        return PPTAgentImageProvider(api_key=api_key, api_base=api_base, model=model)
