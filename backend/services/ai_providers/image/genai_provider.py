@@ -34,7 +34,9 @@ class GenAIImageProvider(ImageProvider):
         prompt: str,
         ref_images: Optional[List[Image.Image]] = None,
         aspect_ratio: str = "16:9",
-        resolution: str = "2K"
+        resolution: str = "2K",
+        project_id: str = None,
+        page_id: str = None
     ) -> Optional[Image.Image]:
         """
         Generate image using Google GenAI SDK
@@ -44,6 +46,8 @@ class GenAIImageProvider(ImageProvider):
             ref_images: Optional list of reference images
             aspect_ratio: Image aspect ratio
             resolution: Image resolution (supports "1K", "2K", "4K")
+            project_id: Optional project ID
+            page_id: Optional page ID
             
         Returns:
             Generated PIL Image object, or None if failed
@@ -104,4 +108,3 @@ class GenAIImageProvider(ImageProvider):
             error_detail = f"Error generating image with GenAI: {type(e).__name__}: {str(e)}"
             logger.error(error_detail, exc_info=True)
             raise Exception(error_detail) from e
-
