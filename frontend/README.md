@@ -1,6 +1,6 @@
-# 蕉幻 (Banana Slides) 前端
+# 盘古幻灯片 (Pangu PPT) 前端
 
-这是蕉幻 AI PPT 生成器的前端应用。
+这是盘古幻灯片 AI PPT 生成器的前端应用。
 
 ## 技术栈
 
